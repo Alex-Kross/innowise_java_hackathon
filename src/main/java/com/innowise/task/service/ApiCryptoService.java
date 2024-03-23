@@ -1,7 +1,7 @@
 package com.innowise.task.service;
 
-import com.innowise.task.entity.dto.CryptoDTO;
+import com.innowise.task.entity.dto.CryptoApi;
 
 public interface ApiCryptoService {
-    CryptoDTO[] getCryptoFromApi(String apiResponse);
+    CryptoApi[] getCryptoFromApi(String apiResponse);
 }

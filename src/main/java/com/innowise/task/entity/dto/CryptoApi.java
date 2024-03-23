@@ -1,8 +1,10 @@
 package com.innowise.task.entity.dto;
 
 import com.google.gson.annotations.SerializedName;
+import lombok.Data;
 
-public class CryptoDTO {
+@Data
+public class CryptoApi {
     @SerializedName("symbol")
     private String name;
     @SerializedName("price")

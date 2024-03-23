@@ -1,11 +1,15 @@
 package com.innowise.task.controller;
 
-import com.innowise.task.entity.dto.CryptoDTO;
+import com.innowise.task.entity.dto.CryptoApi;
+import com.innowise.task.entity.mapper.CryptoMapper;
 import com.innowise.task.service.ApiCryptoService;
+import com.innowise.task.service.CryptocurrencyBot;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,19 +20,15 @@ import java.net.http.HttpResponse;
 @Controller
 public class ApiController {
     private final ApiCryptoService apiCryptoService;
+    private final CryptocurrencyBot bot;
 
     @Value("${crypto.uri}")
     private String uri;
 
-    public ApiController(ApiCryptoService apiCryptoService) {
+    public ApiController(ApiCryptoService apiCryptoService, CryptocurrencyBot bot) {
         this.apiCryptoService = apiCryptoService;
+        this.bot = bot;
     }
-
-
-//    public ApiController(ApiCryptoService apiCryptoService) {
-//        this.apiCryptoService = apiCryptoService;
-//    }
-
 
     @Scheduled(fixedDelayString = "${interval}")
     @Async
@@ -44,7 +44,16 @@ public class ApiController {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("disconnect to api");
         }
-        CryptoDTO[] cryptoDTO = apiCryptoService.getCryptoFromApi(response);
+        CryptoApi[] cryptoApi = apiCryptoService.getCryptoFromApi(response);
+        Message message = new Message();
+        message.setText("/current");
+        Update update = new Update();
+        update.setMessage(message);
+
+        bot.setCryptoRate(new CryptoMapper().fromCryptoApiToString(cryptoApi));
+        bot.onUpdateReceived(update);
+
+
 
 //        weatherService.saveWeather(weatherFromApi);
     }

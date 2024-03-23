@@ -17,10 +17,17 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 public class CryptocurrencyBot extends TelegramLongPollingBot implements BotCommands {
     private BotConfig botConfig;
+
+    private String cryptoRate;
+
     private final String HELP_TEXT = "This bot will help to get crypto rate:\n\n" +
             "/start - start the bot\n" +
             "/current - get current rate crypto\n" +
             "/help - help menu";
+
+    public void setCryptoRate(String cryptoRate) {
+        this.cryptoRate = cryptoRate;
+    }
 
     public CryptocurrencyBot(BotConfig botConfig) {
         this.botConfig = botConfig;
@@ -49,18 +56,18 @@ public class CryptocurrencyBot extends TelegramLongPollingBot implements BotComm
         String receivedMessage;
 
         //если получено сообщение текстом
-        if (update.hasMessage()) {
-            chatId = update.getMessage().getChatId();
-            userId = update.getMessage().getFrom().getId();
-            userName = update.getMessage().getFrom().getFirstName();
-
-            if (update.getMessage().hasText()) {
-                receivedMessage = update.getMessage().getText();
-                botAnswerUtils(receivedMessage, chatId, userName);
-            }
-
+//        if (update.hasMessage()) {
+//            chatId = update.getMessage().getChatId();
+//            userId = update.getMessage().getFrom().getId();
+//            userName = update.getMessage().getFrom().getFirstName();
+//
+//            if (update.getMessage().hasText()) {
+//                receivedMessage = update.getMessage().getText();
+//                botAnswerUtils(receivedMessage, chatId, userName);
+//            }
+//        } else {
             //если нажата одна из кнопок бота
-        } else if (update.hasCallbackQuery()) {
+        if (update.hasCallbackQuery()) {
             chatId = update.getCallbackQuery().getMessage().getChatId();
             userId = update.getCallbackQuery().getFrom().getId();
             userName = update.getCallbackQuery().getFrom().getFirstName();
@@ -68,6 +75,7 @@ public class CryptocurrencyBot extends TelegramLongPollingBot implements BotComm
 
             botAnswerUtils(receivedMessage, chatId, userName);
         }
+//        }
     }
 
     private void botAnswerUtils(String receivedMessage, long chatId, String userName) {
@@ -79,14 +87,25 @@ public class CryptocurrencyBot extends TelegramLongPollingBot implements BotComm
                 sendHelpText(chatId, HELP_TEXT);
                 break;
             case "/current":
-                sendCurrentRate(chatId);
+                sendCurrentRate(chatId, cryptoRate);
                 break;
             default:
                 break;
         }
     }
 
-    private void sendCurrentRate(long chatId) {
+    private void sendCurrentRate(long chatId, String cryptoRate) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText(cryptoRate);
+        message.setReplyMarkup(Buttons.inlineMarkup());
+
+        try {
+            execute(message);
+            log.info("Reply sent");
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
     }
 
     private void startBot(long chatId, String userName) {
